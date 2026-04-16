@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panadería Dulce Sabor</title>
+
+<style>
+body {
+    font-family: Arial;
+    margin: 0;
+    background: #fff8f0;
+}
+
+header {
+    background: linear-gradient(45deg, #8b4513, #d2691e);
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+/* BOTÓN CARRITO */
+.btn-carrito {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #8b4513;
+    color: white;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* PANEL CARRITO */
+.carrito {
+    position: fixed;
+    right: -300px;
+    top: 0;
+    width: 300px;
+    height: 100%;
+    background: white;
+    border-left: 4px solid #8b4513;
+    padding: 10px;
+    transition: 0.3s;
+}
+
+.carrito.activo {
+    right: 0;
+}
+
+/* FILTROS */
+.filtros {
+    text-align: center;
+    padding: 15px;
+}
+
+.filtros button {
+    margin: 5px;
+    background: #d2691e;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* PRODUCTOS */
+.contenedor {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.card h3, .card p {
+    text-align: center;
+}
+
+.card button {
+    display: block;
+    margin: 10px auto;
+    background: #8b4513;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.item {
+    border-bottom: 1px solid #ccc;
+    padding: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🥖 Panadería Dulce Sabor 🍰</h1>
+</header>
+
+<!-- BOTÓN -->
+<div class="btn-carrito" onclick="toggleCarrito()">🛒</div>
+
+<!-- CARRITO -->
+<div class="carrito" id="carrito">
+<h2>Carrito</h2>
+<button onclick="toggleCarrito()">Cerrar</button>
+<div id="lista"></div>
+<h3>Total: $<span id="total">0</span></h3>
+</div>
+
+<div class="filtros">
+<button onclick="filtrar('todos')">Todos</button>
+<button onclick="filtrar('pan')">Pan</button>
+<button onclick="filtrar('pastel')">Pasteles</button>
+<button onclick="filtrar('postre')">Postres</button>
+<button onclick="filtrar('bebida')">Bebidas</button>
+</div>
+
+<section class="contenedor">
+
+<div class="card" data-cat="pan">
+<img src="https://images.unsplash.com/photo-1608198093002-ad4e005484ec">
+<h3>Pan Francés</h3>
+<p>$1</p>
+<button onclick="agregar('Pan Francés',1)">Agregar</button>
+</div>
+
+<div class="card" data-cat="pastel">
+<img src="hhttps://plus.unsplash.com/premium_photo-1715015440855-7d95cf92608a?q=80&w=388&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+<h3>Pastel Chocolate</h3>
+<p>$15</p>
+<button onclick="agregar('Pastel Chocolate',15)">Agregar</button>
+</div>
+
+<div class="card" data-cat="postre">
+<img src="https://images.unsplash.com/photo-1551024506-0bccd828d307">
+<h3>Donas</h3>
+<p>$2</p>
+<button onclick="agregar('Donas',2)">Agregar</button>
+</div>
+
+<div class="card" data-cat="bebida">
+<img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085">
+<h3>Café</h3>
+<p>$1.5</p>
+<button onclick="agregar('Café',1.5)">Agregar</button>
+</div>
+
+</section>
+
+<script>
+let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+
+function guardar() {
+localStorage.setItem("carrito", JSON.stringify(carrito));
+}
+
+function agregar(nombre, precio) {
+let producto = carrito.find(p => p.nombre === nombre);
+
+if (producto) {
+    producto.cantidad++;
+} else {
+    carrito.push({nombre, precio, cantidad: 1});
+}
+
+guardar();
+mostrar();
+}
+
+function eliminar(nombre) {
+carrito = carrito.filter(p => p.nombre !== nombre);
+guardar();
+mostrar();
+}
+
+function mostrar() {
+let lista = document.getElementById("lista");
+lista.innerHTML = "";
+let total = 0;
+
+carrito.forEach(p => {
+    let div = document.createElement("div");
+    div.className = "item";
+
+    div.innerHTML = `
+        ${p.nombre} x${p.cantidad} - $${p.precio * p.cantidad}
+        <br>
+        <button onclick="eliminar('${p.nombre}')">❌</button>
+    `;
+
+    lista.appendChild(div);
+    total += p.precio * p.cantidad;
+});
+
+document.getElementById("total").innerText = total;
+}
+
+/* ABRIR/CERRAR */
+function toggleCarrito() {
+document.getElementById("carrito").classList.toggle("activo");
+}
+
+function filtrar(tipo) {
+let productos = document.querySelectorAll(".card");
+
+productos.forEach(p => {
+    if (tipo === "todos" || p.dataset.cat.includes(tipo)) {
+        p.style.display = "block";
+    } else {
+        p.style.display = "none";
+    }
+});
+}
+
+mostrar();
+</script>
+<!-- MÁS PAN -->
+<div class="card" data-cat="pan">
+<img src="https://images.unsplash.com/photo-1559141680-d0bd7bc5af84?q=80&w=464&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+<h3>Pan de Queso</h3>
+<p>$1.5</p>
+<button onclick="agregar('Pan de Queso',1.5)">Agregar</button>
+</div>
+
+<div class="card" data-cat="pan">
+<img src="https://plus.unsplash.com/premium_photo-1726761768709-32b3dcc03112?q=80&w=386&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+<h3>Baguette</h3>
+<p>$2</p>
+<button onclick="agregar('Baguette',2)">Agregar</button>
+</div>
+
+<!-- MÁS PASTELES -->
+<div class="card" data-cat="pastel">
+<img src="https://images.unsplash.com/photo-1654546518361-eef83e447521?q=80&w=580&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+<h3>Pastel de Vainilla</h3>
+<p>$13</p>
+<button onclick="agregar('Pastel Vainilla',13)">Agregar</button>
+</div>
+
+<div class="card" data-cat="pastel cumple">
+<img src="https://images.unsplash.com/photo-1600653155864-88227b5b64b0?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+<h3>Pastel Arcoíris</h3>
+<p>$18</p>
+<button onclick="agregar('Pastel Arcoiris',18)">Agregar</button>
+</div>
+
+<!-- MÁS POSTRES -->
+<div class="card" data-cat="postre">
+<img src="https://plus.unsplash.com/premium_photo-1716152295675-595f7a5a1d54?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+<h3>Brownie</h3>
+<p>$3</p>
+<button onclick="agregar('Brownie',3)">Agregar</button>
+</div>
+
+<div class="card" data-cat="postre">
+<img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+<h3>Cupcakes</h3>
+<p>$2.5</p>
+<button onclick="agregar('Cupcakes',2.5)">Agregar</button>
+</div>
+
+<!-- MÁS BEBIDAS -->
+<div class="card" data-cat="bebida">
+<img src="https://plus.unsplash.com/premium_photo-1674327105074-46dd8319164b?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+<h3>Capuccino</h3>
+<p>$2.5</p>
+<button onclick="agregar('Capuccino',2.5)">Agregar</button>
+</div>
+
+<div class="card" data-cat="bebida">
+<img src="https://plus.unsplash.com/premium_photo-1675667381451-be2fc08a122e?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D">
+<h3>Jugo Natural</h3>
+<p>$2</p>
+<button onclick="agregar('Jugo Natural',2)">Agregar</button>
+</div>
+
+</body>
+</html>
